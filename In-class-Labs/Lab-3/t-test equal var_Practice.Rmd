@@ -1,0 +1,79 @@
+---
+title: "t-test equal var"
+output: html_document
+---
+
+We measured the wingspan of a number of males and females 
+peregrine falcons.  We are interested in whether 
+the sexes differ in size. For Western Europe, Monneret (2006) gives a range of 
+male wingspan as 70-85 cm and that for females as 95-115 cm. 
+Assuming Normal distributions, this implies means and standard deviations of 
+77.5 and 2.5 cm for males and of 105 and 3 for females. 
+
+We will first look at a model where we assume equal variances with the sexes.
+
+```{r}
+#Simulate the data
+n1 <- 60  				# Number of females
+n2 <- 40					# Number of males
+mu1 <- 105					# Population mean of females
+mu2 <- 77.5					# Population mean of males
+sigma <- 2.75				# Average population SD of both
+
+n <- n1+n2					# Total sample size
+y1 <- rnorm(n1, mu1, sigma)		# Data for females separately
+y2 <- rnorm(n2, mu2, sigma)		# Date for males separately
+data1 <- data.frame(y=c(y1, y2), sex=c(rep("f",n1),rep("m",n2)))			# Aggregate both data sets
+boxplot(data1$y ~ data1$sex, col = "grey", xlab = "Sex", ylab = "Wingspan (cm)", las = 1)
+
+#This is a "means parameterization" approach to generating the data.
+```
+
+An "effects parameterization" approach to generating data would look like the following:
+
+```{r}
+n <- n1+n2  				# Total sample size
+alpha <- mu1				# Mean for females serves as the intercept
+beta <- mu2-mu1				# Beta is the difference male-female
+x <- rep(c(0,1), c(n1, n2))		# Indicator for male
+E.y <- alpha + beta*x			# expectation
+y.obs <- rnorm(n = n, mean = E.y, sd = sigma)	# Add random variation
+boxplot(y.obs ~ x, col = "grey", xlab = "Male", ylab = "Wingspan (cm)", las = 1)
+
+#You may want to repeatedly generate the data (keep re running above code) to get an idea for sampling variance
+
+```
+
+> Analysis in R (MLE)
+
+```{r}
+fit1 <- lm(data1$y ~ data1$sex)  		# Analysis with an effects parameterization
+fit2 <- lm(data1$y ~ data1$sex-1) 		# Analysis with a means parameterization
+summary(fit1)
+summary(fit2)
+
+#Why is there a difference between fit1 and fit2?
+
+
+#What is the interpretation of the coefficients?
+fit1$coefficients
+fit2$coefficients
+
+#Is there a difference in wingspan between males and females? How can you tell?
+
+```
+
+
+> Another way to do this is with the function `t.test`
+```{r}
+#Use the 'means parameterization' data (data1) within the t.test function below. Note that you can use ~ when your data is not already divided into separate vectors (as in the in-class hypothesis testing code). So the code below is saying divide variable y according to sex and test whether a difference exists.
+
+t.test(data1$y ~ data1$sex, var.equal=TRUE)
+
+#What is the default parameterization for t.test (means or effects)?
+
+#Save your workspace if you want to come back to your work and not have to rerun everything.
+save.image()
+
+```
+

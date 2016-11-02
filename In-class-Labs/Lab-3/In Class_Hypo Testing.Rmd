@@ -1,0 +1,289 @@
+Confidence Intervals & Hypothesis Tests
+=====================
+
+```{r}
+set.seed(12733) # Optional...include only if you want to get the same result each time you run this
+par(mar = c(4,4,1,1)) # To make sure you can see the graphs when I run this...
+```
+
+One sample t-tests
+------------------
+
+To start, let's sample 40 ladybug lengths from our population that's normally distributed with mean=1 cm and SD=3 cm: (~N(1,3))
+```{r}
+pop.sample = rnorm(40,mean = 1, sd = 3)
+mean(pop.sample)
+```
+
+We know that if we did a lot of sampling like this, our distribution would have:
+
+Mean = 1
+
+SD.Mean = 3/sqrt(40) = 0.474
+
+But we don't know the standard deviation of the population.
+Instead, we have to ESTIMATE the standard deviation of the mean.
+This is called the 'standard error' of the mean.
+
+To start, our best guess of the population standard deviation is the sample SD.
+So we can calculate the standard error based on that assumption.
+Thus the standard error is the sample SD divided by the square root of the sample size.
+```{r}
+se.mean = sd(pop.sample)/sqrt(40)
+se.mean
+```
+
+Note that this is close to the standard deviation of the mean (0.474) - but not quite.
+
+Now we can give a 95% confidence interval.
+The standard error is distributed using the t-distribution.
+You can get the t-distribution using the standard R modifiers you do for the normal distribution (i.e. rnorm): rt/dt/pt/qt.
+But the t-distribution takes a parameter - 'degrees of freedom' (df).
+Let's see what it looks like for various df values.
+```{r}
+par(mfrow = c(2,3))
+for(tval in c(2,5,10,50,200)) {
+  title = paste('t=',tval)
+  plot(seq(-3,3,by=.01),dt(seq(-3,3,by=.01),df = tval),main = title,type='l',ylim=c(0,.4))  
+}
+plot(seq(-3,3,by=.01),dnorm(seq(-3,3,by=.01)),main = 'z',type='l',ylim=c(0,.4))
+par(mfrow = c(1,1))
+```
+
+Notice that as the df gets large, the t distribution approaches the z distribution (i.e. normal).
+
+So rather than calculating the z-limits of a confidence interval, we calculate the t-limits.
+But we need to know the degrees of freedom for the sample, which is one less than the sample size - 39.
+With a 95% CI, alpha is 0.05 (alpha = one minus the confidence level).
+Alpha is the probability that the mean is NOT in the confidence interval.
+In this case you want to split alpha equally to the top and the bottom.
+So now we use the qt() command, just like qnorm().
+
+```{r}
+t.crit = qt(1-(0.05/2),df = 39)
+t.crit #this is doing the same thing as if we looked up the value in a t table
+```
+
+And so we can be 95% sure that the mean is within t.05 standard errors of the sample mean
+```{r}
+top.range = mean(pop.sample) + t.crit * se.mean
+bottom.range = mean(pop.sample) - t.crit * se.mean
+```
+
+And again... 95% chance we're in the confidence interval
+```{r}
+top.range
+bottom.range
+```
+
+
+You can also shortcut this whole process with t.test()
+
+```{r}
+t.test(pop.sample)
+```
+
+This should tell you all you need to know about the t-test of the sample:
+The t-value, p value, 95% confidence interval, and best estimate of the mean.
+
+Note though, that this defaults to at 95% confidence interval.
+You can change this (say to a 99% interval) using the conf.level argument:
+```{r}
+t.test(pop.sample, conf.level = 0.99)
+```
+
+And you can change your null hypothesis - by default you ask whether the mean of your sample is different than 0.
+For instance, if you wanted to know if the mean of the population were different than 1.
+You just set the 'mu' argument to 1.
+```{r}
+t.test(pop.sample, mu = 1)
+```
+
+
+> EXAMPLE: Let's see this in practice...
+> For instance, you measure the height of a group of trees in your study plot:
+```{r}
+heights = c(68,72,69,68,69,70,70,77,71,72,75,71,71,68,67,70,73,70,76,68)
+```
+
+You also know that the average height of trees in the entire population in your study area is 69 inches.
+What's the mean of your sample?
+```{r}
+mean(heights)
+```
+
+This is slightly greater than the population average...
+But do you have any evidence that your sample is statistically different than the population mean (alpha = .05)?
+You have your sample, and you know your null hypothesis, so...
+```{r}
+t.test(heights, mu = 69)
+```
+
+Yes - the p value is .0108. Because p-value is < 0.05, we can conclude the means are statistically different (95% confidence level).
+
+Two-sample t-tests
+------------------
+
+One sample t-tests work when you know what the mean of the null hypothesis is.
+In the last example, we knew that the average population height was 69 inches.
+But in many cases, you won't know the mean of the null hypothesis.
+
+Let's say you hypothesize that low water pH induces greater length of stickleback fish.
+You divide 20 subjects each into two groups...
+The control group is raised in a tank with neutral pH then all individuals are measured at 30 d of age.
+While the experimental group is raised in an acidic tank (low pH) then individuals are measured at 30 d of age.
+You then get the following measurements:
+```{r}
+cont.sc = c(23,27,16,22,18,22,21,24,18,17,18,22,15,17,23,21,20,18,20,25)
+exp.sc = c(19,24,18,21,24,23,22,27,20,21,26,20,26,25,32,25,24,21,20,20)
+```
+
+In this case, you don't know what the mean length of fish would be in the population.
+All you have are the measurements of your control group.
+But the mean of the control group isn't known exactly - only estimated through your data.
+
+So does the experimental group have statistically longer body lengths?
+By the means, they are slightly higher:
+```{r}
+mean(cont.sc)
+mean(exp.sc)
+```
+
+But we're doing statistics, so we need to test this rigorously!
+
+We want to test whether the difference in the means is 0 or not
+```{r}
+mean.diff = mean(exp.sc) - mean(cont.sc)
+mean.diff
+```
+
+So let's start by defining the t-statistic.
+
+Recall: t = (samp.mean-pop.mean)/std.err
+
+And in the one sample t-test, std.err = std.dev/sqrt(n)
+
+But that assumes perfect knowledge about the population mean and SD (which we rarely have).
+Because we don't have this knowledge, we need to 'pool' our std.dev.
+Typically, you would calculate this by weighting the variances by the degrees of freedom (don't worry about knowing this calculation):
+
+```{r}
+exp.n = length(exp.sc)
+cont.n = length(cont.sc)
+s.pooled = sqrt(((exp.n-1)*sd(exp.sc)^2 + (cont.n-1)*sd(cont.sc)^2)/(exp.n + cont.n - 2))
+s.pooled
+```
+
+But when we have equal n, this becomes much more simple:
+```{r}
+s.pooled = sqrt(0.5 * (sd(cont.sc)^2 + sd(exp.sc)^2))
+s.pooled
+```
+
+This is just averaging the variances of the individual distributions.
+Note that this assumes that the variances are actually equal in the two groups.
+So you're just using both samples combined to better estimate the variance.
+
+We also need to adjust for the number of subjects in each sample.
+In this case, we multiply by sqrt(1/n.cont + 1/n.exp)
+
+So the standard error is:
+
+```{r}
+se.pooled = s.pooled*sqrt(1/20+1/20)
+se.pooled
+```
+
+So our t statistic is simply calculated as:
+
+```{r}
+t.two = mean.diff/se.pooled
+t.two
+```
+
+Next, we need to define the degrees of freedom for the t distribution.
+We define this as the total number of subjects minus 2. (We need one degree of freedom each for each distribution)
+```{r}
+df.t = 20 + 20 - 2
+```
+
+So now that we have a t-statistic and degrees of freedom, we calculate our p value
+```{r}
+p = 2*(1-pt(t.two,df = df.t))
+p
+```
+
+We can tell that there is a statistically significant difference at alpha = 0.05
+
+But we can also take a shortcut with t.test.
+Here we give t.test both vectors, rather than just one:
+```{r}
+t.test(exp.sc,cont.sc)
+```
+
+Notice that the df and p are very slightly different from what we calculated.
+This is because by default, t.test does not assume the variances are equal.
+If you want to assume equal variance, you must set var.equal to TRUE
+```{r}
+t.test(exp.sc,cont.sc, var.equal = TRUE)
+```
+
+And we can change the CI level the same way too:
+```{r}
+t.test(exp.sc,cont.sc,var.equal = TRUE, conf.level = .99)
+```
+
+Paired t-tests
+--------------
+
+In some cases, you want to measure the improvement in a single subject over time.
+For instance, say you want to test the effect of food supplementation to an area where critically endangered California condors reside. You will want to weigh subjects before supplementation then weigh them afterwards. 
+The supplementation is considered successful if there is a significant increase in weight.
+Let's say they did this for 20 individuals and got the following data (in grams):
+```{r}
+before = c(188,171,188,165,174,175,130,159,153,111,180,166,165,154,185,129,187,142,176,162)
+after = c(190,174,196,153,187,182,153,165,149,116,190,171,169,151,191,145,182,149,181,160)
+```
+
+Now what happens if you run a t-test?
+```{r}
+t.test(after,before)
+```
+
+In this case, you wouldn't see any evidence of an effect (p-value is ~0.5)...
+But you would be wrong.
+
+A core assumption of two-sample t-tests is that the observations are independent.
+But in this case, they're not - each subject contributes a before and after.
+Let's look at this in a data frame to see how they match up:
+```{r}
+wgain = data.frame('Before' = before, 'After' = after)
+wgain
+```
+
+Or just plot them quickly:
+```{r}
+plot(before,after)
+```
+
+You can see that some subjects are heavier in general, and some are lighter.
+But you don't care about baseline weights - you want to know if there's a change.
+And from the plot, it looks pretty clear that some relationship exists...
+
+In the case of paired or repeated measures t-tests, you just take a difference score.
+Then run a t-test on that difference
+```{r}
+wgain$Diff = after - before
+wgain
+```
+
+This has the effect of changing it back into a one-sample t-test.
+In this t-test, the null hypothesis is there is no change - aka a mean of 0.
+What do we conclude from the t test in this case?
+```{r}
+t.test(wgain$Diff)
+```
+
+Note that if you don't make this a paired test, you don't find an effect.
+The between subject differences are much bigger than the within subject differences.
+If you are looking at differences within subjects, always use a paired t-test by doing a t-test of the difference scores.
