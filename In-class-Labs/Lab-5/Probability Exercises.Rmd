@@ -1,0 +1,48 @@
+---
+title: "Probability Exercises"
+output: html_document
+---
+
+##Using pnorm command: normal distributions and densities
+`pnorm` has the format: # of interest, mean, SD.
+By default, `pnorm` calculates less than the # of interest. To do greater than, include the argument lower.tail=FALSE
+
+## 1. Probability female less than 60 inches?
+Mean height of females is 64 in; SD is 3 in.
+```{r}
+pnorm(60,64,3,lower.tail=TRUE)
+```
+
+## 2. Probability male at least 72 inches?
+Mean height of males is 70 in; SD is 3 in.
+```{r}
+#your code here
+```
+
+## 3. Height such that 2% of females shorter than x?
+The command `qnorm` let's you work with a probability, not a quantile like with `pnorm`.
+```{r}
+qnorm(0.02,64,3,lower.tail=TRUE)
+```
+
+## 4. Proportion of males between 68 and 71 inches?
+Hint: you can add/subtract pnorm commands!
+```{r}
+#your code here
+```
+
+## 5. Distribution for males
+```{r, echo=FALSE}
+x<-seq(50,80,length=1000) #generates a sequence of 1000 #s btw 50 & 80
+y<-dnorm(x,mean=70,sd=3) #generates the density distribution of x with mean of 70 and sd of 3 (males)
+plot(x,y,type="l",lwd=1) #plots the density
+
+```
+
+## 6. Adding distribution for females
+How would you adjust the code from #5 for females? Do so here and graph the curve on the same plot as the male curve above. 
+Don't forget to add a legend (use legend command) and adjust the weight (lwd argument) of the plotted line so that it's heavier for females (so you can distinguish between the 2 curves easily).
+```{r,echo=FALSE}
+
+```
+
