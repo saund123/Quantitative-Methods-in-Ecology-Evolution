@@ -1,0 +1,171 @@
+---
+title: "Extra Probability Exercises"
+output: html_document
+---
+
+**Hot Hands**
+
+Basketball players who make several baskets in succession are described as having a "hot hand". Fans and players have long believed in the hot hand phenomenon, which refutes the assumption that each shot is independent of the next. However, a 1985 paper by Gilovich, Vallone, and Tversky collected evidence that contradicted this belief and showed that successive shots are independent events. This paper started a great controversy that continues to this day, as you can see by Googling "hot hand basketball".
+
+We do not expect to resolve this controversy today. However, in this lab we'll apply one approach to answering
+questions like this. The goals for this lab are to:
+
+1. think about the effects of independent and dependent events
+
+2. learn how to simulate shooting streaks in R, and
+
+3. learn to compare a simulation to actual data in order to determine if the hot hand phenomenon appears to be real.
+
+Our investigation will focus on the performance of one player: Kobe Bryant of the Los Angeles Lakers. His performance against the Orlando Magic in the 2009 NBA finals earned him the title "Most Valuable Player" and many spectators commented on how he appeared to show a hot hand. Let's load some data from those games and look at the first several rows.
+
+```{r}
+download.file("http://stat.duke.edu/~cr173/Sta111_Su14/Lab/lab3.RData", destfile = "kobe.RData")
+load("kobe.RData")
+#your code here for looking at first several rows
+```
+
+In this data frame, every row records a shot taken by Kobe Bryant. If he hit the shot (made a basket), a hit, H, is recorded in the column named basket, otherwise a miss, M, is recorded. Just looking at the string of hits and misses, it can be difficult to gauge whether or not it seems like Kobe was shooting with a hot hand. One way we can approach this is by considering the belief that hot hand shooters tend to go on shooting streaks. For this lab, we define the length of a shooting streak to be the number of consecutive baskets made until a miss occurs.
+
+The custom function `calc streak`, which was loaded in with the data, may be used to calculate the lengths of all shooting streaks and then look at the distribution.
+
+```{r}
+kobe_streak = calc_streak(kobe$basket)
+table(kobe_streak)
+barplot(table(kobe_streak))
+```
+
+We've shown that Kobe had some long shooting streaks, but are they long enough to support the belief that he had hot hands? What can we compare them to?
+
+To answer these questions, let's return to the idea of independence. Two processes are independent if the outcome of one process doesn't effect the outcome of the second. If each shot that a player takes is an independent process, having made or missed your first shot will not affect the probability that you will make or miss your second shot.
+
+A shooter with a hot hand will have shots that are not independent of one another. Specifically, if the shooter makes his first shot, the hot hand model says he will have a higher probability of making his second shot.
+
+Let's suppose for a moment that the hot hand model is valid for Kobe. During his career, the percentage of time Kobe makes a basket (i.e. his shooting percentage) is about 45%, or in probability notation, P(shot 1 = H) = 0.45.
+
+If he makes the first shot and has a hot hand (not independent shots), then the probability that he makes his second shot would go up to, let's say, 60%, P(shot 2 = H | shot 1 =H) = 0.6.
+
+As a result of these increased probabilites, you'd expect Kobe to have longer streaks right? Compare this to the skeptical perspective where Kobe does not have a hot hand, where each shot is independent of the next. If he hit his first shot, the probability that he makes the second is still 0.45.
+
+Now that we've phrased the situation in terms of independent shots, let's return to the question: how do we tell if Kobe's shooting streaks are long enough to indicate that he has hot hands? We can compare his streak lengths to someone without hot hands: an independent shooter.
+
+**Simulations in R**
+
+Before we perform any simulations it is important that we set up a seed for our random number generator. This seed will initialize the random number generator such that we will obtain random results from our simulations but that every time we run the simulation the results will be the same. This is important when working with knitr as otherwise all calculations and plots that depend on the simulation results will change
+every time you knit your document.
+
+```{r}
+set.seed(3414382) #random number I chose in ()
+```
+
+While we don't have any data from a shooter we know to have independent shots, that sort of data is very easy to simulate in R. In a simulation, you set the ground rules of a random process and then the computer uses random numbers to generate an outcome that adheres to those rules. As a simple example, you can simulate flipping a fair coin with the following:
+
+```{r}
+outcomes = c("heads", "tails") #specify your 2 outcomes in ()
+sample(outcomes, size = 1, replace = TRUE) #use the sample function to pull samples of a certain size from your vector of outcomes
+```
+
+The vector `outcomes` can be thought of as a hat with two slips of paper in it: one slip says "heads" and the
+other says "tails". The function `sample` draws one slip from the hat and tells us if it was a head or a tail.
+
+If you wanted to simulate flipping a fair coin 100 times, you could either run the function 100 times or, more simply, adjust the `size` argument, which governs how many samples to draw (the `replace = TRUE` argument indicates we put the slip of paper back in the hat before drawing again). Save the resulting vector of heads and tails in a new object called `sim fair coin`.
+
+```{r}
+#your code here
+```
+
+To view the results of this simulation, type the name of the object and then use table command we used above to count up the number of heads and tails.
+
+```{r}
+#your code here
+```
+
+Say we're trying to simulate an unfair coin that we know only lands heads 20% of the time. We can adjust for this by adding an argument called `prob`, which provides a vector of two probability weights (0.2, 0.8).
+
+```{r}
+#your code here
+```
+
+**Simulating the independent basketball shooter**
+
+Simulating a basketball player who has independent shots uses the same mechanism that we use to simulate a coin flip. To simulate a single shot from an independent shooter with a shooting percentage of 50% we type (note: adjust `outcomes` object from above before `sample` command):
+
+```{r}
+#your code here
+```
+
+To make a valid comparison between Kobe and our simulated independent shooter, we need to align both their shooting percentage and the number of attempted shots.
+
+What change needs to be made to the `sample` function so that it reflects a shooting percentage of 45%? Make this adjustment, then run a simulation to sample 133 shots. Assign the output of this simulation to a new object called `sim basket`.
+
+```{r}
+#your code here
+```
+
+With the results of the simulation saved as sim basket, we have the data necessary to compare Kobe to our
+independent shooter. We can look at Kobe's data alongside our simulated data.
+
+```{r}
+kobe$basket
+sim_basket
+```
+
+Both data sets represent the results of 133 shot attempts, each with the same shooting percentage of 45%. We know that our simulated data is from a shooter that has independent shots. That is, we know the simulated shooter does not have a hot hand.
+
+**Comparing Kobe Bryant to the independent shooter**
+
+Using `calc_streak`, compute the streak lengths of `sim basket`. Save this is an object called `kobe_streak2`. Then use the `table` and `barplot` commands to look at the distribution of streak lengths for the independent shooter.
+
+```{r}
+#your code here
+```
+
+Describe the distribution of streak lengths. What is the typical streak length for this simulated independent shooter with a 45% shooting percentage?
+
+How does Kobe Bryant's distribution of streak lengths from above compare to the distribution of streak lengths for the simulated shooter? Using this comparison, do you have evidence that the hot hand model fits Kobe's shooting patterns? Explain.
+
+**Biological Example: Disease Testing**
+
+Suppose we have a test for the chytrid fungus that is positive 90% of the time when tested on a frog with chytrid `P(test + | chytrid) = 0.9`, and is negative 95% of the time when tested on a healthy frog `P(test - | no chytrid) = 0.95`. We also know that chytrid is affecting about 1% of the amphibian population in a certain area `P(chytrid = 0.01)`.
+
+You select a frog from your sample area and it tests positive for chytrid. What is the chance it truly has chytrid?
+
+You can answer this question directly using Bayes' theorem, but we'll tackle this a bit differently. We'll create a hypothetical population of 100,000 frogs, and see if we can figure this out.
+
+```{r}
+chytrid <- sample(c('No','Yes'), size=100000, replace=TRUE, prob=c(0.99,0.01))
+test <- rep(NA, 100000) # create a dummy variable first
+test[chytrid=='No'] <- sample(c('Neg','Pos'), size=sum(chytrid=='No'), replace=TRUE, prob=c(0.95,0.05))
+test[chytrid=='Yes'] <- sample(c('Neg','Pos'), size=sum(chytrid=='Yes'), replace=TRUE, prob=c(0.1, 0.9))
+```
+
+In the above code we first simulate which frogs have chytrid, given on average 1% of the population we're considering has chytrid. We then find out which frogs among those without chytrid would test positive, based on `P(test - | no chytrid) = 0.95`.
+
+Recall that the when considering a conditioning event, the conditioning event is considered the sample space, and so all the laws of probability hold within that space. In particular, `P(test + | no chytrid) = 1 - P(test - | no chytrid) = 0.05`.
+
+We do a similar computation for the frogs with chytrid. The question we are asking, what is the chance that a given frog has chytrid given that it tested positive, can then be directly answered as:
+
+```{r}
+#mean(chytrid[??=="??"]=="??") #hint: this is the function to use, but what do you replace ?? with?
+```
+
+Wow! Even though the test is pretty good, the chance that the frog actually has a chytrid infection even if it tests positive is actually pretty small. This is because the chance of actually getting chytrid is pretty small in the first place. However, if we look at how much the chance of being infected with chytrid changed with a positive test, it is quite large (simply divide your code from above by the mean of chytrid infections in your sample:
+
+```{r}
+#your code here
+```
+
+That is, the knowledge that the frog tested positive increased its chance of truly having chytrid XX-fold!
+
+If we calculate the probability using Bayes' theorem, we get a very similar result:
+
+P(chytrid=Yes | test +) = P(test + | chytrid=Yes) * P(chytrid=Yes) / P(test+) =
+
+P(test + | chytrid=Yes) * P(chytrid=Yes) / [P(test + | chytrid=Yes) * P(chytrid=Yes) + P(test + | chytrid=No) * P(chytrid=No)] = ??
+
+Write out your probability calculations here: 
+
+**Conclusion**
+
+Conditional probabilities and Bayes' theorem have many everyday applications such as determining the risk of our investments, what the weather will be like this weekend, and what our medical test results mean. These concepts are central to understanding the consequences of our actions and how relationships between entities can affect outcomes. With recent increases in the amount and availability of data, understanding these concepts become essential for making informed, data-driven decisions. In this lab, we reviewed how to formally look at conditional probabilities, what rules they follow, and how to use those rules along with Bayes' theorem to figure out the conditional probabilities of events.
+
+
