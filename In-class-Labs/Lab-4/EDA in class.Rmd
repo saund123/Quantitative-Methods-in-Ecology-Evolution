@@ -1,0 +1,75 @@
+---
+title: "EDA exercises"
+output: html_document
+---
+
+Read in the fish dataset from the URL.
+```{r}
+fish <- read.table("http://www.bio.fsu.edu/miller/docs/Tutorials/eg1.txt",head=T)
+```
+
+What command would you use to see the variable names in the dataset?
+
+```{r}
+#command here
+```
+
+The data are derived from a larger study of character variation in a species of fish, sailfin mollies. Specifically, the data consist of selected measurements on females from three populations (identified by the POP variable, populations 1, 2 and 5). Ignore the column IDNO. The actual data recorded include several measurements taken on individual fish: RAYNO, a discrete variable for the number of rays in the dorsal fin; SL, a quantitative variable of the body lengths in mm; FINAREA, a quantitative variable containing measurements of the area of the dorsal fin in sq mm; and TAREA, a quantitative variable of the tail-fin area in sq mm.
+
+Attach the data first
+```{r}
+attach(fish)
+```
+
+##Histogram
+Plot histograms of the SL, FINAREA and TAREA variables.
+```{r}
+#your code here (refer to code on slides if needed)
+```
+
+These data come from 3 different populations. Plot histograms of body lengths in population 1 and dorsal fin area from population 5.
+```{r}
+#your code here
+```
+
+Create a customized histogram with detailed axis labels, a main heading and different colors. Type ?hist or help(hist) to learn about the arguments you need to include in the hist() command for these changes.
+```{r}
+#your code here
+```
+
+Create a side-by-side boxplot of SL for each of the 3 populations within the same figure.
+```{r}
+#your code here
+```
+
+Create a scatterplot with TAREA on the x axis and FINAREA on the y axis.
+```{r}
+#your code here
+```
+
+What if we want to add a linear regression line to our plot?
+The function `lm` can be used to specify a linear model and `abline` can be used to a line of the slope-intercept form. Note that `lm` takes the form Y ~ X so this is the OPPOSITE of the order you specify when plotting a scatterplot (i.e. x then y).
+So to add a simple linear regression line to the plot we type the following line. 
+```{r}
+plot() #make sure to put your plot code from above here. R can't place the line unless there's a plot already called.
+abline(lm(Y~X)) #replace x and y with the appropriate variable names
+```
+
+Plot both your boxplot and scatterplot within the same panel. Use your code above and this line below which specifies 1 row of figures and 2 columns.
+```{r}
+par(mfrow=c(1,2))
+#your code here
+```
+
+
+Create parallel box plots (i.e., 1 row & 3 columns; adjust par(mfrow) code from above appropriately) of a given variable for the three different populations in the fish data set. Add the labels "population" to the x axes and "range" to the y axes. Give the boxes in each plot different colors. In addition, give the graph an appropriate title.
+```{r}
+#your code here
+```
+
+Use the par(mfrow=(c(2,3)) format. Plot the graph above, as well as 3 different scatter plots of TAREA vs. FINAREA (for the three different populations) with appropriate axes labels and headings, all on the same graphics panel. Add a linear regression line showing the relationship between the points in each graph and use a different color for the points and lines in each of your three scatter plots.
+```{r}
+#your code here
+```
+
+
