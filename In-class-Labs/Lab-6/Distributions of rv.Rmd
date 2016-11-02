@@ -1,0 +1,113 @@
+---
+title: "Distributions of Random variables"
+output: html_document
+---
+
+In this lab we'll investigate the probability distribution that is most central to statistics: the normal distribution.
+If we are confident that our data are nearly normal, that opens the door to many powerful statistical methods.
+Here we'll use the graphical tools of R to assess the normality of our data and also learn how to generate
+random numbers from a normal distribution.
+
+Load the data this way:
+```{r}
+download.file("http://www.openintro.org/stat/data/bdims.RData", destfile = "bdims.RData")
+load("bdims.RData")
+```
+
+In this lab, we'll be working with measurements of body dimensions. This data set contains measurements
+from 247 men and 260 women, most of whom were considered healthy young adults.
+
+Take a look at the first few rows of data (called bdims):
+```{r}
+#your code here
+```
+
+You'll see that for every observation we have 25 measurements, many of which are either diameters or girths.
+A key to the variable names can be found at http://www.openintro.org/stat/data/bdims.php, but we'll be focusing
+on just three columns to get started: weight in kg (wgt), height in cm (hgt), and sex (1 indicates male, 0
+indicates female).
+
+Since males and females tend to have different body dimensions, it will be useful to create two additional data
+sets: one with only men and another with only women.
+
+```{r}
+#your code here
+```
+
+Make a histogram of men's heights and a histogram of women's heights. How would you compare the various aspects of the two distributions?
+
+```{r}
+#your code here
+```
+
+We can plot a normal distribution curve on top of a histogram to see how closely the data follow a normal distribution. This normal curve should have the same mean and standard deviation as the data. We'll be working with women's heights, so let's store them as a separate object
+and then calculate some statistics that will be referenced later.
+
+```{r}
+#your code here
+```
+
+Next we make a density histogram to use as the backdrop and use the lines function to overlay a normal probability curve. Using a density histogram allows us to properly overlay a normal distribution curve over the histogram since the curve is a normal probability density function. To do this, simply add the `probability=TRUE` argument to your `hist` function.
+
+```{r}
+#your code here
+```
+
+Based on the plot, does it seem to follow the normal distribution?
+
+Eyeballing the shape of the histogram is one way to determine if the data appear to be nearly normally distributed, but it can be frustrating to decide just how close the histogram is to the curve. An alternative approach involves constructing a normal probability plot, also called a normal Q-Q plot for "quantile-quantile", which we saw in the last lab.
+
+Create a qqplot to look at the normality of the distribution of female height.
+
+```{r}
+#your code here (hint: use qqnorm and qqline)
+```
+
+A data set that is nearly normal will result in a probability plot where the points closely follow the line. Any deviations from normality leads to deviations of these points from the line. The plot for female heights shows points that tend to follow the line but with some errant points towards the tails. We're left with the same problem that we encountered with the histogram above: how close is close enough?
+
+A useful way to address this question is to rephrase it as: what do probability plots look like for data that I know came from a normal distribution? We can answer this by simulating data from a normal distribution using rnorm.
+
+```{r}
+#sim = rnorm(n = ??, mean = ??, sd = ??)
+```
+
+Replace the question marks with: In the first argument, indicate how many numbers you'd like to generate, which should be the same number of heights in the fdims data set using the length function. The last two arguments determine the mean and standard deviation of the normal distribution from which the simulated sample will be generated (should be same mean and SD as the female height variable). We can take a look at the shape of our simulated data set, sim, as well as its normal probability plot.
+
+Make a normal probability plot of sim. Do all of the points fall on the line? How does this plot compare to the probability plot for the real data?
+ 
+```{r}
+#your code here
+```
+
+Even better than comparing the original plot to a single plot generated from a normal distribution is to compare
+it to many more plots using the following function.
+
+```{r}
+qqnormsim(fdims$hgt)
+```
+
+Using the same technique, determine whether or not female weights appear to come from a normal distribution. If not, how would you describe the shape of this distribution?
+
+```{r}
+#your code here
+```
+
+Okay, so now you have a slew of tools to judge whether or not a variable is normally distributed. Why should we care?
+
+It turns out that statisticians know a lot about the normal distribution. Once we decide that a random variable is approximately normal, we can answer all sorts of questions about that variable related to probability. Take, for example, the question of, "What is the probability that a randomly chosen young adult female is taller than 6 feet (about 182 cm)?"
+
+If we assume that female heights are normally distributed (a very close approximation is also okay), we can find this probability by calculating a Z score and consulting a Z table (also called a normal probability table) as we did a couple labs previously. In R, this is done in one step with the function `pnorm`. Use `pnorm` to answer the question: what is the probability of choosing a female taller than 182 cm?
+
+```{r}
+#your code here
+```
+
+If we want to calculate the probability empirically (i.e. with raw sample data only), we simply need to determine how many observations fall above 182 then divide
+this number by the total sample size.
+
+```{r}
+sum(fdims$hgt > 182)/length(fdims$hgt)
+```
+
+Although the probabilities are not exactly the same, they are reasonably close. The closer that your distribution
+is to being normal, the more accurate the theoretical probabilities will be.
